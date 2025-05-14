@@ -1,0 +1,19 @@
+2025-05-03T13:45:26.139Z - Ошибка обновления профиля: column "user_id" does not exist
+2025-05-03T13:52:43.275Z - Ошибка загрузки документа: column "id_type" of relation "documents" does not exist
+2025-05-11T13:04:08.803Z - Ошибка входа: column roles.name does not exist
+2025-05-11T14:43:28.329Z - Ошибка загрузки документа: insert or update on table "documents" violates foreign key constraint "fk_type"
+2025-05-12T15:52:21.515Z - Ошибка обработки заявки: app_id is not a function
+2025-05-12T15:55:25.823Z - Ошибка обработки заявки: app_id is not a function
+2025-05-12T16:03:01.542Z - Ошибка обработки заявки: app_id is not a function
+2025-05-12T16:03:53.416Z - Ошибка обработки заявки: app_id is not a function
+2025-05-12T16:05:17.422Z - Ошибка обработки заявки: app_id is not a function
+2025-05-12T16:05:37.863Z - Ошибка обработки заявки: app_id is not a function
+2025-05-12T16:05:43.688Z - Ошибка обработки заявки: app_id is not a function
+2025-05-12T16:05:49.396Z - Ошибка обработки заявки: app_id is not a function
+2025-05-13T12:00:01.294Z - Ошибка обновления профиля: check is not defined
+2025-05-13T12:02:03.074Z - Ошибка обновления профиля: Вы уже оставили заявку, она находится в рассмотрении
+2025-05-13T12:02:31.656Z - Ошибка обновления профиля: Вы уже оставили заявку, она находится в рассмотрении
+2025-05-13T14:43:13.983Z - Ошибка блокировки пользователя: invalid input syntax for type integer: "даун"
+2025-05-13T14:44:43.690Z - Ошибка блокировки пользователя: null value in column "admin_id" of relation "banned_users" violates not-null constraint
+2025-05-13T14:44:53.066Z - Ошибка блокировки пользователя: invalid input syntax for type integer: "лалала"
+2025-05-13T14:47:19.726Z - Ошибка блокировки пользователя: invalid input syntax for type integer: "причина"
