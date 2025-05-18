@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 
-
 // Создаем экземпляр axios
 const api = axios.create({
   baseURL: 'http://localhost:3000/api'
@@ -17,14 +16,37 @@ api.interceptors.request.use(config => {
 });
 
 // Обработка ошибок
+let lastForbiddenPath = null;
 api.interceptors.response.use(
   response => response,
   error => {
+    const currentPath = window.location.pathname;
+
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      //alert('У вас нет доступа к данному ресурсу, авторизуйтесь.')
       window.location.href = '/login';
+    } 
+    else if (error.response?.status === 403) {
+      if (lastForbiddenPath === currentPath) {
+        return Promise.reject(error); 
+      }
+
+      lastForbiddenPath = currentPath; 
+
+      if (currentPath !== '/login') {
+        const errorMessage = error.response.data?.error?.message
+          || error.response.data?.message
+          || 'У вас нет надлежащих прав для получения доступа к данному ресурсу';
+
+        alert(errorMessage);
+
+        // Отложенное выполнение, чтобы избежать гонки
+        setTimeout(() => {
+          window.history.back();
+        }, 100);
+      }
     }
+
     return Promise.reject(error);
   }
 );
@@ -40,7 +62,8 @@ export const userAPI = {
   postApplication: (description) => api.post('/user/applications', {description}),
   solveApplication: (app_id, number) => api.put('/user/applications', { app_id, number }),
   getUserProf: (user_id) => api.get('/user/userr', {params: { user_id }}),
-  ban: (user_id, comment) => api.post('/user/userr', { user_id, comment })
+  ban: (user_id, comment) => api.post('/user/userr/ban', { user_id, comment }),
+  unban: (user_id) => api.post('/user/userr/unban', { user_id })
 };
 
 // Документы

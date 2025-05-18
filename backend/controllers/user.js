@@ -219,7 +219,7 @@ exports.getAllDocs = async (req, res) => {
 // Админские
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await pool.query('SELECT id, username FROM users');
+    const users = await pool.query('SELECT id, username, is_banned FROM users');
     res.status(200).json(users.rows);
   } catch (err){
     const message = `${new Date().toISOString()} - Ошибка получения списка пользователей: ${err.message}\n`;
@@ -244,9 +244,10 @@ exports.getUserProf = async (req, res) => {
 
   try {
     const userData = await pool.query(
-      'SELECT u.id, u.username, ui.name, ui.surname, ui.email ' + 
+      'SELECT u.id, u.username, ui.name, ui.surname, ui.email, bu.comment ' + 
       'FROM users u ' + 
       'LEFT JOIN users_info ui ON u.id = ui.user_id ' +
+      'LEFT JOIN banned_users bu ON u.id = bu.user_id ' +
       'WHERE u.id = $1'
     , [user_id]); 
 
@@ -294,12 +295,50 @@ exports.ban = async (req, res) => {
     await client.query('COMMIT'); // Фиксируем транзакцию
 
     res.status(200).json({
-      message: `Пользователь №${user_id} заблокирован'}`,
+      message: `Пользователь №${user_id} заблокирован`,
     });
 
   } catch (err) {
     await client.query('ROLLBACK'); // Откатываем транзакцию в случае ошибки
     const message = `${new Date().toISOString()} - Ошибка блокировки пользователя: ${err.message}\n`;
+    fs.appendFileSync(logFilePath, message);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release(); // Освобождаем клиент
+  }
+};
+
+exports.unban = async (req, res) => {
+
+  const admin_id = req.user_id;
+  const { user_id } = req.body;
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN'); // Начинаем транзакцию
+
+    const result = await client.query(
+      'UPDATE users SET is_banned = FALSE WHERE id = $1 RETURNING *',
+      [user_id]
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error('Пользователь не найден');
+    }
+
+    await client.query('DELETE FROM banned_users WHERE user_id = $1 AND admin_id = $2', [user_id, admin_id]);
+
+    console.log(`Пользователь №${user_id} разблокирован`);
+
+    await client.query('COMMIT'); // Фиксируем транзакцию
+
+    res.status(200).json({
+      message: `Пользователь №${user_id} разблокирован`,
+    });
+
+  } catch (err) {
+    await client.query('ROLLBACK'); // Откатываем транзакцию в случае ошибки
+    const message = `${new Date().toISOString()} - Ошибка разблокировки пользователя: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
     res.status(500).json({ error: err.message });
   } finally {

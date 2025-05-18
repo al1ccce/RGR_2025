@@ -17,3 +17,8 @@
 2025-05-13T14:44:43.690Z - Ошибка блокировки пользователя: null value in column "admin_id" of relation "banned_users" violates not-null constraint
 2025-05-13T14:44:53.066Z - Ошибка блокировки пользователя: invalid input syntax for type integer: "лалала"
 2025-05-13T14:47:19.726Z - Ошибка блокировки пользователя: invalid input syntax for type integer: "причина"
+2025-05-17T12:55:04.616Z - Ошибка получения списка пользователей: column "is_bannded" does not exist
+2025-05-17T12:55:04.671Z - Ошибка получения списка пользователей: column "is_bannded" does not exist
+2025-05-17T12:55:06.785Z - Ошибка получения списка пользователей: column "is_bannded" does not exist
+2025-05-17T12:55:06.786Z - Ошибка получения списка пользователей: column "is_bannded" does not exist
+2025-05-18T11:38:38.892Z - Ошибка входа: TRUE is not defined

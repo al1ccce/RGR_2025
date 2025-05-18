@@ -23,6 +23,7 @@ const Auth = ({ isRegister = false, setIsAuth }) => {
       navigate('/documents');
       console.log("redirecting");
     } catch (err) {
+      console.log('Ошибка:', err);
       setError(err.response?.data?.error || 'Ошибка авторизации');
     }
   };

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
 import { userAPI, documentsAPI } from '../api';
-import { jwtDecode } from 'jwt-decode';
+//import { jwtDecode } from 'jwt-decode';
 import '../index.css';
 
 const Admin = () => {
@@ -19,7 +18,8 @@ const Admin = () => {
       username: '',
       name: '',
       surname: '',
-      email: ''
+      email: '',
+      comment: ''
     });
     const [showUserData, setShowUserData] = useState(false);
 
@@ -31,43 +31,34 @@ const Admin = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const appsResponse = await userAPI.getAllDocuments();
+          setDocuments(appsResponse.data);
 
-        const token = localStorage.getItem('token');
-        const { role } = jwtDecode(token);
-        if (role !== 'admin') {
-            alert('Вы не админ.');
-            Navigate(-1);
+          const userResponse = await userAPI.getAllUsers();
+          setUsers(userResponse.data);
+
+          const applicationsResponse = await userAPI.getApplications();
+          setApplications(applicationsResponse.data);
+
+        } catch (err) {
+          setError(err.response?.data?.error || 'Ошибка загрузки данных');
+        } finally {
+          setLoading(false);
         }
+      };
 
-        const fetchData = async () => {
-            try {
-
-                const appsResponse = await userAPI.getAllDocuments();
-                setDocuments(appsResponse.data);
-
-                const userResponse = await userAPI.getAllUsers();
-                setUsers(userResponse.data);
-
-                const applicationsResponse = await userAPI.getApplications();
-                setApplications(applicationsResponse.data);
-
-            } catch (err) {
-                setError(err.response?.data?.error || 'Ошибка загрузки данных');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
+      fetchData();
     }, []);
 
     if (loading) {
-        return <div className="loading">Загрузка профиля...</div>;
+        return <div className="loading">Загрузка данных...</div>;
     }
 
     if (error) {
         return (
-            <div className="auth-error">
+            <div className="classic-error">
                 <p>{error}</p>
                 <button onClick={() => window.location.reload()}>Попробовать снова</button>
             </div>
@@ -139,7 +130,6 @@ const Admin = () => {
     };
 
     const handleBan = async (user_id, comment) => {
-
       const confirmBan = window.confirm('Вы уверены, что хотите заблокировать этого пользователя?');
       if (!confirmBan) {
         setComment(null);
@@ -149,7 +139,11 @@ const Admin = () => {
     
       try {
         const response = await userAPI.ban(user_id, comment);
-        setUsers((prev) => prev.filter((user) => user.id !== user_id));
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === user_id ? { ...user, is_banned: true } : user
+          )
+        );
         setShowBanModal(false);
         setComment(null);
         alert(response.data.message);
@@ -162,6 +156,27 @@ const Admin = () => {
       }
     };
 
+    const handleUnban = async (user_id) => {
+      const confirmUnban = window.confirm('Вы уверены, что хотите разблокировать этого пользователя?');
+      if (!confirmUnban) return;
+    
+      try {
+        const response = await userAPI.unban(user_id);
+        alert(response.data.message);
+    
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === user_id ? { ...user, is_banned: false } : user
+          )
+        );
+    
+      } catch (err) {
+        alert(err.response?.data?.error || 'Не удалось разблокировать пользователя');
+        console.error(err);
+      }
+    };
+
+
     const handleUserClick = async (id) => {
       try {
         const res = await userAPI.getUserProf(id);
@@ -170,7 +185,8 @@ const Admin = () => {
           username: userData.username || '',
           name: userData.name || 'Не указано',
           surname: userData.surname || 'Не указано',
-          email: userData.email || 'Не указано'
+          email: userData.email || 'Не указано',
+          comment: userData.comment
         });
         setShowUserData(true);
       } catch (err) {
@@ -192,7 +208,8 @@ const Admin = () => {
           username: '',
           name: '',
           surname: '',
-          email: ''
+          email: '',
+          comment: ''
         });
         setComment(null);
 
@@ -313,8 +330,11 @@ const Admin = () => {
             <ul className="any-list">
               {users.map((user) => (
                 <li key={user.id} className="any-item" onClick={() => handleUserClick(user.id)}>
-                  <span>{user.username}</span>
+                  {user.is_banned === true ? 
+                  <span className = 'banned'>{user.username} [заблокирован]</span> :
+                  <span>{user.username}</span> }
                   <div className="buttons">
+                  {user.is_banned === false ?
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -325,6 +345,16 @@ const Admin = () => {
                   >
                     Заблокировать
                   </button>
+                  :
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUnban(user.id)
+                    }}
+                    className="bad-button"
+                  >
+                    Разблокировать
+                  </button>}
                 </div>
                 </li>
               ))}
@@ -337,7 +367,10 @@ const Admin = () => {
                 <p><b>Пользователь:</b> {userData.username}</p>
                 <p><b>Имя:</b> {userData.name}</p>
                 <p><b>Фамилия:</b> {userData.surname}</p>
-                <p><b>Email:</b>{userData.email}</p>
+                <p><b>Email: </b>{userData.email}</p>
+                {userData.comment && userData.comment.trim() !== '' && (
+                  <p><b>Причина блокировки:</b> {userData.comment}</p>
+                )}
               </div>
             </div>
           )}

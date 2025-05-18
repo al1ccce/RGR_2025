@@ -55,11 +55,14 @@ exports.login = async (req, res) => {
     if (!isValid) {
       return res.status(400).json({ error: 'Неверный пароль' });
     }
+    if (user.rows[0].is_banned === true){
+      return res.status(403).json({ error: 'Доступ запрещён: пользователь заблокирован' });
+    }
 
     const token = jwt.sign(
       { user_id: user.rows[0].id,
         role: user.rows[0].role},
-      process.env.JWT_SECRET,
+        process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
