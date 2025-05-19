@@ -23,6 +23,11 @@
   border-bottom: 1px solid #eee;
 }
 
+.center-button {
+  display: flex;
+  justify-content: center;
+}
+
 .good-button {
   padding: 8px 16px;
   background-color: #4CAF50;

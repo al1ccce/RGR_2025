@@ -30,45 +30,80 @@ exports.getProf = async (req, res) => {
 exports.updateProf = async (req, res) => {
   const user_id = req.user_id;
   const { username, name, surname, email } = req.body;
-  console.log(user_id, username, name, surname, email);
 
-  const client = await pool.connect(); 
+  const cleanName = (name || '').trim();
+  const cleanSurname = (surname || '').trim();
+  const cleanUsername = (username || '').trim();
+  const cleanEmail = (email || '').trim();
+
+
+  const client = await pool.connect();
 
   try {
     await client.query('BEGIN'); // Начинаем транзакцию
 
+    const symbols = /^[a-zA-Zа-яА-ЯёЁ]+$/u; 
+
+    const symbols2 = /^[a-zA-Z0-9_.-]+$/;
+
+    if (!symbols2.test(cleanUsername)) {
+      return res.status(400).json({ error: 'Логин содержит недопустимые символы' });
+    }
+
+    if (cleanUsername.length < 4 || cleanUsername.length > 50) {
+      return res.status(400).json({ error: 'Логин должен содержать от 4 до 50 символов' });
+    }
+
+    if (!symbols.test(cleanName)) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Имя содержит недопустимые символы.' });
+    }
+
+    if (!symbols.test(cleanSurname)) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Фамилия содержит недопустимые символы.' });
+    }
+
+    if (cleanName.length < 2) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Имя должно быть не короче 2 символов.' });
+    }
+
+    if (cleanSurname.length < 2) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Фамилия должна быть не короче 2 символов.' });
+    }
+
     const emailCheck = await client.query(
       'SELECT 1 FROM users_info WHERE email = $1 AND user_id != $2',
-      [email, user_id]
+      [cleanEmail, user_id]
     );
 
     const usernameCheck = await client.query(
-      'SELECT 1 FROM users WHERE username = $1 AND id != $2 ',
-      [username, user_id]
+      'SELECT 1 FROM users WHERE username = $1 AND id != $2',
+      [cleanUsername, user_id]
     );
 
     if (emailCheck.rows.length > 0) {
       await client.query('ROLLBACK');
-      return res.status(400).json({error: 'Пользователь с таким email уже существует'});
-    } 
+      return res.status(400).json({ error: 'Пользователь с таким email уже существует' });
+    }
 
     if (usernameCheck.rows.length > 0) {
       await client.query('ROLLBACK');
-      return res.status(400).json({error: 'Пользователь с таким username уже существует'});
+      return res.status(400).json({ error: 'Пользователь с таким username уже существует' });
     }
 
+    // Обновление данных пользователя
     const updatedUser = await client.query(
       'UPDATE users SET username = $1 WHERE id = $2 RETURNING id, username',
-      [username, user_id]
+      [cleanUsername, user_id]
     );
-
-    console.log('Обновлённый пользователь:', updatedUser.rows[0]);
 
     const updatedUserInfo = await client.query(
       'UPDATE users_info SET name = $1, surname = $2, email = $3 WHERE user_id = $4 RETURNING user_id, name, surname, email',
-      [name, surname, email, user_id]
+      [cleanName, cleanSurname, cleanEmail, user_id]
     );
-    console.log('Обновлённая информация о пользователе:', updatedUserInfo.rows[0]);
 
     await client.query('COMMIT'); // Подтверждаем транзакцию
 
@@ -78,14 +113,14 @@ exports.updateProf = async (req, res) => {
       updatedUserInfo: updatedUserInfo.rows[0],
     });
   } catch (err) {
-    await client.query('ROLLBACK'); // Откатываем транзакцию в случае ошибки
+    await client.query('ROLLBACK'); // Откатываем транзакцию при ошибке
     const message = `${new Date().toISOString()} - Ошибка обновления профиля: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
     res.status(500).json({ error: err.message });
   } finally {
-    client.release(); // Освобождаем клиент
+    client.release(); // Освобождаем клиент из пула
   }
-}
+};
 
 exports.postApplication = async (req, res) => {
   const user_id = req.user_id;
@@ -219,7 +254,7 @@ exports.getAllDocs = async (req, res) => {
 // Админские
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await pool.query('SELECT id, username, is_banned FROM users');
+    const users = await pool.query('SELECT id, username, is_banned, role_id FROM users');
     res.status(200).json(users.rows);
   } catch (err){
     const message = `${new Date().toISOString()} - Ошибка получения списка пользователей: ${err.message}\n`;
@@ -274,6 +309,13 @@ exports.ban = async (req, res) => {
     if (admin_id === user_id) {
       return res.status(409).json({
         error: 'Нельзя заблокировать самого себя'
+      });
+    }
+
+    const check_role = await client.query('SELECT role_id FROM users WHERE id = $1', [user_id]);
+    if (check_role.rows[0].role_id === 3 || check_role.rows[0].role_id === '3') {
+      return res.status(409).json({
+        error: 'Нельзя заблокировать главного администратора'
       });
     }
 

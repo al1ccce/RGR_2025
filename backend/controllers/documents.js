@@ -18,9 +18,9 @@ exports.upload = async (req, res) => {
     } else {
       type_id = 3;
     }
-    console.log('req.desc:', req.body.description);
+    console.log('НОВЫЙ ФАЙЛ ЗАГРУЖЕН НА СЕРВЕР:', req.body.description);
     if (!file) {
-      return res.status(400).json({ error: 'Файл не загружен' });
+      return res.status(400).json({ error: 'Файл не загружен. Проверьте, что загруженный файл формата текстового документа или изображения, а его размер < 10 МБ' });
     }
 
     const fileBuffer = fs.readFileSync(file.path);

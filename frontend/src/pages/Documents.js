@@ -46,8 +46,8 @@ const Documents = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
     navigate('/login');
+    localStorage.removeItem('token');
   };
 
   const handleClick = async (id) => {

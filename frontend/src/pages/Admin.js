@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { userAPI, documentsAPI } from '../api';
-//import { jwtDecode } from 'jwt-decode';
 import '../index.css';
 
 const Admin = () => {
@@ -29,6 +29,8 @@ const Admin = () => {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
       const fetchData = async () => {
@@ -218,6 +220,8 @@ const Admin = () => {
     return (
       <div className='admin-container'>
         <h2 className="admin-title">Админ-панель</h2>
+        <div className='center-button'><button type="button" onClick={() => navigate('/me')} className="good-button">Назад</button></div>
+        <span className = 'spacer'></span>
         <div className="any-container">
           <h3>Заявки на администрирование</h3>
         {applications.length > 0 ? (
@@ -332,7 +336,10 @@ const Admin = () => {
                 <li key={user.id} className="any-item" onClick={() => handleUserClick(user.id)}>
                   {user.is_banned === true ? 
                   <span className = 'banned'>{user.username} [заблокирован]</span> :
-                  <span>{user.username}</span> }
+                    <span>
+                      {user.username}
+                      {user.role_id > 1 && ' [админ]'}
+                    </span>}
                   <div className="buttons">
                   {user.is_banned === false ?
                   <button

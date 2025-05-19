@@ -125,8 +125,8 @@ const User = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
     navigate('/login');
+    localStorage.removeItem('token');
   };
 
   const handleApplicationSubmit = async () => {
