@@ -80,6 +80,6 @@ exports.login = async (req, res) => {
   } catch (err) {
     const message = `${new Date().toISOString()} - Ошибка входа: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Непредвиденная ошибка авторизации" });
   }
 };

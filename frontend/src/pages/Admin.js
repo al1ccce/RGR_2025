@@ -72,7 +72,7 @@ const Admin = () => {
           setAppDesc(app_description);
           setShowAppDesc(true);
         } catch (err) {
-          console.error('Ошибка получения описания:', err);
+          alert('Ошибка получения описания');
         }
     };
 
@@ -82,7 +82,7 @@ const Admin = () => {
         setDocumentDesc(response.data);
         setShowDocumentDesc(true);
       } catch (err) {
-        console.error('Ошибка получения описания:', err);
+        alert('Ошибка получения описания');
       }
     };
 
@@ -95,7 +95,6 @@ const Admin = () => {
             setApplications(prevApps => prevApps.filter(app => app.id !== id));
 
           } catch (err) {
-            console.error('Ошибка при отправке заявки:', err);
             alert('Не удалось обработать заявку. Попробуйте позже.');
           }
     };
@@ -113,9 +112,11 @@ const Admin = () => {
         link.remove();
         
       } catch (err) {
-        console.error('Ошибка:', err);
         if (err.status === 400){
           alert('Хеш-суммы не совпадают, скачивание предотвращено!');
+        }
+        else {
+          alert('Ошибка при скачивании документа');
         }
       }
     };
@@ -126,7 +127,6 @@ const Admin = () => {
         setDocuments((prev) => prev.filter(doc => doc.id !== id));
         alert('Документ удалён');
       } catch (err) {
-        console.error('Не удалось удалить документ:', err);
         alert('Ошибка при удалении документа');
       }
     };
@@ -154,7 +154,6 @@ const Admin = () => {
         alert(err.response?.data?.error || 'Не удалось заблокировать пользователя');
         setComment(null);
         setShowBanModal(false);
-        console.error(err);
       }
     };
 
@@ -174,7 +173,6 @@ const Admin = () => {
     
       } catch (err) {
         alert(err.response?.data?.error || 'Не удалось разблокировать пользователя');
-        console.error(err);
       }
     };
 
@@ -193,7 +191,6 @@ const Admin = () => {
         setShowUserData(true);
       } catch (err) {
         setError('Не удалось загрузить данные');
-        console.error(err);
       };
     };
   

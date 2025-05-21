@@ -23,8 +23,11 @@ api.interceptors.response.use(
     const currentPath = window.location.pathname;
 
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      if (currentPath !== '/login') {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
     } 
     else if (error.response?.status === 403) {
       if (lastForbiddenPath === currentPath) {

@@ -26,7 +26,6 @@ const EditProfile = () => {
         });
       } catch (err) {
         setError('Не удалось загрузить данные');
-        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -49,7 +48,6 @@ const EditProfile = () => {
       navigate('/me');
   
     } catch (err) {
-      console.error('Ошибка:', err);
       const errorMessage = err.response?.data?.error 
         || 'Неизвестная ошибка';
       setError(errorMessage);

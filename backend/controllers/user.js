@@ -22,7 +22,7 @@ exports.getProf = async (req, res) => {
   } catch (err) {
     const message = `${new Date().toISOString()} - Ошибка получения профиля: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Непредвиденная ошибка на сервере' });
   }
 };
 
@@ -116,7 +116,7 @@ exports.updateProf = async (req, res) => {
     await client.query('ROLLBACK'); // Откатываем транзакцию при ошибке
     const message = `${new Date().toISOString()} - Ошибка обновления профиля: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Непредвиденная ошибка на сервере' });
   } finally {
     client.release(); // Освобождаем клиент из пула
   }
@@ -156,7 +156,7 @@ exports.postApplication = async (req, res) => {
     await client.query('ROLLBACK'); // Откатываем транзакцию в случае ошибки
     const message = `${new Date().toISOString()} - Ошибка обновления профиля: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Непредвиденная ошибка на сервере' });
   } finally {
     client.release(); // Освобождаем клиент
   }
@@ -165,7 +165,6 @@ exports.postApplication = async (req, res) => {
 exports.solveApplication = async (req, res) => {
   const { app_id, number } = req.body;
   const client = await pool.connect();
-  console.log('Z:', app_id, number);
 
   try {
     await client.query('BEGIN'); // Начинаем транзакцию
@@ -182,7 +181,6 @@ exports.solveApplication = async (req, res) => {
       'UPDATE applications SET status_id = $1 WHERE id = $2 RETURNING *',
       [status_id, app_id]
     );
-    console.log(result.rows[0].id, result.rows[0].status_id);
 
     if (result.rows.length === 0) {
       throw new Error('Заявка не найдена');
@@ -214,7 +212,7 @@ exports.solveApplication = async (req, res) => {
     await client.query('ROLLBACK'); // Откатываем транзакцию в случае ошибки
     const message = `${new Date().toISOString()} - Ошибка обработки заявки: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Непредвиденная ошибка на сервере' });
   } finally {
     client.release(); // Освобождаем клиент
   }
@@ -231,7 +229,7 @@ exports.getDocs= async (req, res) => {
   } catch (err) {
     const message = `${new Date().toISOString()} - Ошибка получения документов: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Непредвиденная ошибка на сервере' });
   }
 };
 
@@ -248,7 +246,7 @@ exports.getAllDocs = async (req, res) => {
     } catch (err){
       const message = `${new Date().toISOString()} - Ошибка получения документов: ${err.message}\n`;
       fs.appendFileSync(logFilePath, message);
-      res.status(500).json({error: err.message});
+      res.status(500).json({ error: 'Непредвиденная ошибка на сервере' });
     }
 };
 // Админские
@@ -259,7 +257,7 @@ exports.getAllUsers = async (req, res) => {
   } catch (err){
     const message = `${new Date().toISOString()} - Ошибка получения списка пользователей: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({error: err.message});
+    res.status(500).json({ error: 'Непредвиденная ошибка на сервере' });
   }
 }
 
@@ -270,7 +268,7 @@ exports.getApplications = async (req, res) => {
   } catch (err){
     const message = `${new Date().toISOString()} - Ошибка получения списка пользователей: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({error: err.message});
+    res.status(500).json({ error: 'Непредвиденная ошибка на сервере' });
   }
 }
 
@@ -294,7 +292,7 @@ exports.getUserProf = async (req, res) => {
   } catch (err) {
     const message = `${new Date().toISOString()} - Ошибка получения профиля: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Непредвиденная ошибка на сервере' });
   }
 };
 
@@ -303,7 +301,7 @@ exports.ban = async (req, res) => {
   const admin_id = req.user_id;
   const { user_id, comment } = req.body;
   const client = await pool.connect();
-  console.log(user_id, ' ', admin_id, ' ', comment);
+  console.log('Бан юзера №', user_id, ' админом №', admin_id, ', причина:', comment);
 
   try {
     if (admin_id === user_id) {
@@ -344,7 +342,7 @@ exports.ban = async (req, res) => {
     await client.query('ROLLBACK'); // Откатываем транзакцию в случае ошибки
     const message = `${new Date().toISOString()} - Ошибка блокировки пользователя: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Непредвиденная ошибка на сервере' });
   } finally {
     client.release(); // Освобождаем клиент
   }
@@ -382,7 +380,7 @@ exports.unban = async (req, res) => {
     await client.query('ROLLBACK'); // Откатываем транзакцию в случае ошибки
     const message = `${new Date().toISOString()} - Ошибка разблокировки пользователя: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Непредвиденная ошибка на сервере' });
   } finally {
     client.release(); // Освобождаем клиент
   }

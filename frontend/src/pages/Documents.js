@@ -15,9 +15,8 @@ const Documents = () => {
       try {
         const { data } = await userAPI.getAllDocuments();
         setDocuments(data);
-        console.log(data);
       } catch (err) {
-        console.error('Ошибка загрузки документов:', err);
+        alert('Ошибка загрузки документов:');
       } finally {
         setLoading(false);
       }
@@ -38,16 +37,17 @@ const Documents = () => {
       link.remove();
       
     } catch (err) {
-      console.error('Ошибка:', err);
       if (err.status === 400){
         alert('Хеш-суммы не совпадают, скачивание предотвращено!');
+      } else {
+        alert('Ошибка при скачивании документа')
       }
     }
   };
 
   const handleLogout = () => {
-    navigate('/login');
     localStorage.removeItem('token');
+    navigate('/login', { replace: true });
   };
 
   const handleClick = async (id) => {
@@ -56,7 +56,7 @@ const Documents = () => {
       setDesc(response.data);
       setShowDesc(true);
     } catch (err) {
-      console.error('Ошибка получения описания:', err);
+      alert('Ошибка получения описания:');
     }
   };
 

@@ -5,71 +5,49 @@ import Documents from './pages/Documents';
 import User from './pages/User';
 import EditProfile from './pages/EditProfile';
 import Admin from './pages/Admin';
+import './index.css';
 
-// Защита роутов 
-function ProtectedRoute({ children }) {
-  const token = localStorage.getItem('token');
-
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-}
 
 function App() {
   const [isAuth, setIsAuth] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Обновляем isAuth при изменении токена
   useEffect(() => {
-    setIsAuth(!!localStorage.getItem('token'));
+    const token = localStorage.getItem('token');
+    setIsAuth(!!token);
+    setIsLoading(false); 
   }, []);
 
+  if (isLoading) {
+    return <div className = 'loading'></div>;
+  }
   return (
     <BrowserRouter>
       <Routes>
+        <Route 
+          path="/login" 
+          element={!isAuth ? <Auth setIsAuth={setIsAuth} /> : <Navigate to="/documents" />} 
+        />
+        <Route 
+          path="/register" 
+          element={!isAuth ? <Auth isRegister setIsAuth={setIsAuth} /> : <Navigate to="/documents" />} 
+        />
         <Route path="/" element={<Navigate to={isAuth ? "/documents" : "/login"} />} />
-
-        <Route
-          path="/login"
-          element={!isAuth ? <Auth setIsAuth={setIsAuth} /> : <Navigate to="/documents" />}
+        <Route 
+          path="/documents" 
+          element={isAuth ? <Documents /> : <Navigate to="/login" />} 
         />
-        <Route
-          path="/register"
-          element={!isAuth ? <Auth isRegister setIsAuth={setIsAuth} /> : <Navigate to="/documents" />}
+        <Route 
+          path="/me" 
+          element={isAuth ? <User /> : <Navigate to="/login" />} 
         />
-
-        <Route
-          path="/documents"
-          element={
-            <ProtectedRoute>
-              <Documents />
-            </ProtectedRoute>
-          }
+        <Route 
+          path="/me/edit" 
+          element={isAuth ? <EditProfile /> : <Navigate to="/login" />} 
         />
-        <Route
-          path="/me"
-          element={
-            <ProtectedRoute>
-              <User />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/me/edit"
-          element={
-            <ProtectedRoute>
-              <EditProfile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/me/admin"
-          element={
-            <ProtectedRoute>
-              <Admin />
-            </ProtectedRoute>
-          }
+        <Route 
+          path="/me/admin" 
+          element={isAuth ? <Admin /> : <Navigate to="/login" />} 
         />
       </Routes>
     </BrowserRouter>

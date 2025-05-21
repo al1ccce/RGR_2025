@@ -9,7 +9,6 @@ import '../index.css';
 const User = () => {
   const token = localStorage.getItem('token');
   const { role } = jwtDecode(token);
-  console.log('role:', role);
 
   const [user, setUser] = useState(null);
   const [documents, setDocuments] = useState([]);
@@ -61,7 +60,6 @@ const User = () => {
     formData.append('file', selectedFile);
     formData.append('type', uploadType);
     formData.append('description', description);
-    console.log(formData);
 
     setUploading(true);
     try {
@@ -69,7 +67,6 @@ const User = () => {
       setDocuments((prev) => [...prev, response.data]);
       alert('Документ успешно загружен!');
     } catch (err) {
-      console.error('Ошибка загрузки:', err);
       alert('Не удалось загрузить документ.');
     } finally {
       setUploading(false);
@@ -86,7 +83,7 @@ const User = () => {
       setDesc(response.data);
       setShowDesc(true);
     } catch (err) {
-      console.error('Ошибка получения описания:', err);
+      alert('Ошибка получения описания:');
     }
   };
 
@@ -106,9 +103,10 @@ const User = () => {
       link.click();
       document.body.removeChild(link);
     } catch (err) {
-      console.error('Ошибка:', err);
       if (err.status === 400) {
         alert('Хеш-суммы не совпадают, скачивание предотвращено!');
+      } else {
+        alert('Ошибка при скачивании документа')
       }
     }
   };
@@ -119,14 +117,13 @@ const User = () => {
       setDocuments((prev) => prev.filter(doc => doc.id !== id));
       alert('Документ удалён');
     } catch (err) {
-      console.error('Не удалось удалить документ:', err);
       alert('Ошибка при удалении документа');
     }
   };
 
   const handleLogout = () => {
-    navigate('/login');
     localStorage.removeItem('token');
+    navigate('/login');
   };
 
   const handleApplicationSubmit = async () => {
@@ -141,7 +138,6 @@ const User = () => {
       alert('Заявка успешно отправлена!');
       setApplicationDescription(''); 
     } catch (err) {
-      console.error('Ошибка при отправке заявки:', err);
       alert(err.response?.data?.error || 'Не удалось отправить заявку. Попробуйте позже.');
     }
   };

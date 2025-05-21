@@ -18,7 +18,6 @@ module.exports = (true_role) => async (req, res, next) => {
       }
   
       const user = userResult.rows[0];
-      // console.log(true_role, ' ', user.role);
       
       if (true_role && user.role !== true_role) {
         return res.status(403).json({ error: 'Доступ запрещён: недостаточно прав' });

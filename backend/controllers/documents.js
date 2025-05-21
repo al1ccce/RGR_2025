@@ -6,7 +6,6 @@ const logFilePath = path.join(__dirname, '../server.log');
 
 exports.upload = async (req, res) => {
   try {
-    console.log('req.file:', req.file);
     const file = req.file;
     const description = req.body.description;
     const type = req.body.type;
@@ -35,7 +34,7 @@ exports.upload = async (req, res) => {
   } catch (err) {
     const message = `${new Date().toISOString()} - Ошибка загрузки документа: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Файл не загружен. Проверьте, что загруженный файл формата текстового документа или изображения, а его размер < 10 МБ' });
   }
 };
 
@@ -63,7 +62,7 @@ exports.download = async (req, res) => {
   } catch (err) {
     const message = `${new Date().toISOString()} - Ошибка скачивания документа: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Непредвиденная ошибка при скачивании документа' });
   }
 };
 
@@ -96,7 +95,7 @@ exports.info = async (req, res) => {
   } catch (err) {
     const message = `${new Date().toISOString()} - Ошибка получения информации о документе: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Непредвиденная ошибка получении описания' });
   }
 };
 
@@ -124,7 +123,7 @@ exports.deletee = async (req, res) => {
     console.error('Ошибка при удалении документа:', err);
     const message = `${new Date().toISOString()} - Ошибка удаления документа: ${err.message}\n`;
     fs.appendFileSync(logFilePath, message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Непредвиденная ошибка при удалении документа' });
   } finally {
     client.release();
   }
